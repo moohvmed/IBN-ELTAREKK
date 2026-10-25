@@ -1,0 +1,15 @@
+{
+  "name": "ibn-eltarek-functions",
+  "private": true,
+  "main": "index.js",
+  "engines": { "node": "20" },
+  "scripts": { "serve": "firebase emulators:start --only functions,firestore", "deploy": "firebase deploy --only functions" },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^4.21.2",
+    "express-rate-limit": "^7.5.0",
+    "firebase-admin": "^13.0.0",
+    "firebase-functions": "^6.3.0",
+    "helmet": "^8.0.0"
+  }
+}

@@ -1,0 +1,170 @@
+{
+  "entities": {
+    "User": {
+      "title": "User",
+      "description": "User profile for students, parents, and tutors",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "User ID",
+          "maxLength": 128
+        },
+        "name": {
+          "type": "string",
+          "description": "Full name",
+          "maxLength": 120
+        },
+        "email": {
+          "type": "string",
+          "description": "Email address",
+          "maxLength": 120
+        },
+        "phone": {
+          "type": "string",
+          "description": "Phone number",
+          "maxLength": 30
+        },
+        "role": {
+          "type": "string",
+          "enum": ["student", "parent", "tutor"],
+          "description": "User role in tutoring center"
+        },
+        "specializationOrGrade": {
+          "type": "string",
+          "description": "Academic stage or subject specialization",
+          "maxLength": 200
+        },
+        "linkedParentPhone": {
+          "type": "string",
+          "description": "Linked guardian phone number",
+          "maxLength": 30
+        },
+        "linkedStudentPhone": {
+          "type": "string",
+          "description": "Linked student phone number",
+          "maxLength": 30
+        },
+        "avatar": {
+          "type": "string",
+          "description": "Avatar image URL",
+          "maxLength": 500
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "Timestamp when user document was created"
+        }
+      },
+      "required": ["id", "name", "role"]
+    },
+    "Grade": {
+      "title": "Grade",
+      "description": "Student exam grade record",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "maxLength": 128
+        },
+        "studentId": {
+          "type": "string",
+          "maxLength": 128
+        },
+        "examTitle": {
+          "type": "string",
+          "maxLength": 200
+        },
+        "examType": {
+          "type": "string",
+          "maxLength": 50
+        },
+        "subject": {
+          "type": "string",
+          "maxLength": 50
+        },
+        "score": {
+          "type": "number"
+        },
+        "totalScore": {
+          "type": "number"
+        },
+        "percentage": {
+          "type": "number"
+        },
+        "gradeLabel": {
+          "type": "string",
+          "maxLength": 50
+        },
+        "classRank": {
+          "type": "number"
+        },
+        "tutorFeedback": {
+          "type": "string",
+          "maxLength": 500
+        },
+        "date": {
+          "type": "string",
+          "maxLength": 50
+        }
+      },
+      "required": ["id", "studentId", "examTitle", "score", "totalScore"]
+    },
+    "Attendance": {
+      "title": "Attendance",
+      "description": "Attendance record for sessions",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "maxLength": 128
+        },
+        "studentId": {
+          "type": "string",
+          "maxLength": 128
+        },
+        "lectureNumber": {
+          "type": "number"
+        },
+        "date": {
+          "type": "string",
+          "maxLength": 50
+        },
+        "subject": {
+          "type": "string",
+          "maxLength": 50
+        },
+        "topic": {
+          "type": "string",
+          "maxLength": 200
+        },
+        "status": {
+          "type": "string",
+          "enum": ["present", "late", "excused"]
+        },
+        "checkInTime": {
+          "type": "string",
+          "maxLength": 50
+        },
+        "hall": {
+          "type": "string",
+          "maxLength": 100
+        }
+      },
+      "required": ["id", "studentId", "lectureNumber", "date", "status"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": { "$ref": "User" },
+      "description": "User profiles for authenticated students, parents, and tutors"
+    },
+    "/grades/{gradeId}": {
+      "schema": { "$ref": "Grade" },
+      "description": "Exam grade records"
+    },
+    "/attendance/{attendanceId}": {
+      "schema": { "$ref": "Attendance" },
+      "description": "Session attendance records"
+    }
+  }
+}

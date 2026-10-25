@@ -1,0 +1,52 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function signedIn() { return request.auth != null; }
+    function isSelf(uid) { return signedIn() && request.auth.uid == uid; }
+    function hasProfile() { return signedIn() && exists(/databases/$(database)/documents/users/$(request.auth.uid)); }
+    function isTutor() {
+      return hasProfile() && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'tutor';
+    }
+
+    // Profile creation is limited to student-role self-profiles. Tutor/parent roles must be assigned by an administrator.
+    match /users/{uid} {
+      allow get: if isSelf(uid) || isTutor();
+      allow list: if isTutor();
+      allow create: if isSelf(uid)
+        && request.resource.data.keys().hasAll(['id', 'name', 'role'])
+        && request.resource.data.keys().hasOnly([
+          'id', 'name', 'role', 'email', 'phone', 'avatar', 'specializationOrGrade', 'createdAt'
+        ])
+        && request.resource.data.id == uid
+        && request.resource.data.name is string
+        && request.resource.data.name.size() > 0
+        && request.resource.data.name.size() <= 120
+        && request.resource.data.role == 'student';
+      allow update: if (isTutor() && request.resource.data.role == resource.data.role)
+        || (isSelf(uid)
+          && request.resource.data.role == resource.data.role
+          && request.resource.data.id == resource.data.id
+          && request.resource.data.diff(resource.data).affectedKeys()
+            .hasOnly(['name', 'avatar', 'phone', 'specializationOrGrade'])
+          && request.resource.data.name is string
+          && request.resource.data.name.size() > 0
+          && request.resource.data.name.size() <= 120
+          && (!request.resource.data.keys().hasAny(['avatar'])
+            || (request.resource.data.avatar is string && request.resource.data.avatar.size() <= 2048))
+          && (!request.resource.data.keys().hasAny(['phone'])
+            || (request.resource.data.phone is string && request.resource.data.phone.size() <= 30))
+          && (!request.resource.data.keys().hasAny(['specializationOrGrade'])
+            || (request.resource.data.specializationOrGrade is string
+              && request.resource.data.specializationOrGrade.size() <= 120)));
+      allow delete: if isTutor();
+    }
+
+    // All application data is accessed through authenticated Cloud Functions APIs.
+    // Admin SDK bypasses these rules; clients cannot directly tamper with grades, attendance, content or requests.
+    match /grades/{id} { allow read, write: if false; }
+    match /attendance/{id} { allow read, write: if false; }
+    match /content/{id} { allow read, write: if false; }
+    match /registrationRequests/{id} { allow read, write: if false; }
+    match /{document=**} { allow read, write: if false; }
+  }
+}
